@@ -2,7 +2,7 @@
 //  CatImage.swift
 //  Cat App
 //
-//  Created by administrator on 27.09.21.
+//  Created by Maximilian Goch on 27.09.21.
 //
 
 import Foundation

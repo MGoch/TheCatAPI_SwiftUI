@@ -2,7 +2,7 @@
 //  ArticleDetailView.swift
 //  SwiftUIModal
 //
-//  Created by Simon Ng on 19/8/2020.
+//  Created by Maximilian Goch on 27.09.21.
 //
 
 import SwiftUI
@@ -17,26 +17,24 @@ struct CatDetailView: View {
         ScrollView {
             VStack(alignment: .leading) {
                 if let urlString = cat?.image?.url {
-                    if #available(iOS 15.0, *) {
+                    AsyncImage(url: URL(string: urlString)) { phase in
                         
-                        AsyncImage(url: URL(string: urlString)) { phase in
-                            
-                            switch phase {
-                                case .empty:
-                                    Color.purple.opacity(0.1)
-                                case .success(let image):
-                                image
+                        switch phase {
+                            case .empty:
+                                Color.purple.opacity(0.1)
+                            case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                            case .failure(_):
+                                Image(systemName: "exclamationmark.icloud")
                                     .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                case .failure(_):
-                                    Image(systemName: "exclamationmark.icloud")
-                                        .resizable()
-                                        .scaledToFit()
-                                @unknown default:
-                                    Image(systemName: "exclamationmark.icloud")
-                            }
+                                    .scaledToFit()
+                            @unknown default:
+                                Image(systemName: "exclamationmark.icloud")
                         }
                     }
+                    
                 }
                     
                 Group {
@@ -58,8 +56,6 @@ struct CatDetailView: View {
                     .lineLimit(1000)
                     .multilineTextAlignment(.leading)
             }
-                
-            
         }
         .overlay(
             HStack {

@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Cat App
 //
-//  Created by administrator on 27.09.21.
+//  Created by Maximilian Goch on 27.09.21.
 //
 
 import SwiftUI
@@ -15,34 +15,42 @@ struct ListView: View {
     
     @State private var searchText = ""
     
+    var searchResults: [Cat] {
+        if searchText.isEmpty {
+            return catFetcher.cats
+        } else {
+            return catFetcher.cats.filter { $0.name.contains(searchText) }
+        }
+    }
+    
     var body: some View {
         NavigationView {
-            if #available(iOS 15.0, *) {
-                List(searchResults) { cat in
+            List(searchResults) { cat in
 
-                    CatImageRow(cat: cat)
-                        .onTapGesture {
-                            self.selectedCat = cat
-                        }
-                }
-                .sheet(item: self.$selectedCat) { article in
-                    CatDetailView(cat: selectedCat)
-                }
-                
-                .navigationBarTitle("Katzen")
-                .searchable(text: $searchText)
+                CatImageRow(cat: cat)
+                    .onTapGesture {
+                        self.selectedCat = cat
+                    }
             }
+            .task {
+
+                await self.catFetcher.fetchCats()
+            }
+            .refreshable {
+                
+                await self.catFetcher.fetchCats()
+            }
+            .sheet(item: self.$selectedCat) { article in
+                CatDetailView(cat: selectedCat)
+            }
+
+            .navigationBarTitle("Katzen")
+            .searchable(text: $searchText)
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
-    var searchResults: [Cat] {
-            if searchText.isEmpty {
-                return catFetcher.cats
-            } else {
-                return catFetcher.cats.filter { $0.name.contains(searchText) }
-            }
-        }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
@@ -70,7 +78,6 @@ struct CatImageRow: View {
                                 .scaledToFill()
                                 .frame(maxWidth: 300, maxHeight: 200)
                             case .success(let image):
-                            
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
@@ -83,10 +90,13 @@ struct CatImageRow: View {
                                             .opacity(0.2)
                                             .shadow(color: Color.black.opacity(5.0), radius: 5, x: 5, y: 5))
                             
+                            
                                 Text(cat.name)
                                     .font(.system(.title, design: .rounded))
                                     .foregroundColor(.white)
                                     .fontWeight(.black)
+                            
+                                
                             
                             case .failure(_):
                                 Image(systemName: "photo")
