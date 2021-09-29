@@ -9,11 +9,11 @@ import SwiftUI
 
 struct ListView: View {
     
-    @State var cats: [Cat] = []
+    @StateObject var catFetcher = CatAPIService()
     
-    @State var selectedCat: Cat?
+    @State private var selectedCat: Cat?
     
-    @State var searchText = ""
+    @State private var searchText = ""
     
     var body: some View {
         NavigationView {
@@ -28,11 +28,7 @@ struct ListView: View {
                 .sheet(item: self.$selectedCat) { article in
                     CatDetailView(cat: selectedCat)
                 }
-                .onAppear(perform: {
-                    CatAPIService().getCats { (cats) in
-                        self.cats = cats
-                    }
-                })
+                
                 .navigationBarTitle("Katzen")
                 .searchable(text: $searchText)
             }
@@ -42,9 +38,9 @@ struct ListView: View {
     
     var searchResults: [Cat] {
             if searchText.isEmpty {
-                return cats
+                return catFetcher.cats
             } else {
-                return cats.filter { $0.name.contains(searchText) }
+                return catFetcher.cats.filter { $0.name.contains(searchText) }
             }
         }
 }
@@ -57,46 +53,53 @@ struct ContentView_Previews: PreviewProvider {
 
 struct CatImageRow: View {
     
-    var cat: Cat
+    @State var cat: Cat
     
     var body: some View {
         
         ZStack {
 
-            if let image = cat.image, let urlString = image.url {
+            if let urlString = cat.image?.url {
                 if #available(iOS 15.0, *) {
-                    AsyncImage(url: URL(string: urlString)) { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: 300, maxHeight: 200)
-                            .cornerRadius(10)
-                            .overlay(
-                                Rectangle()
-                                    .foregroundColor(.black)
+                    
+                    AsyncImage(url: URL(string: urlString)) { phase in
+                        
+                        switch phase {
+                            case .empty:
+                                ProgressView()
+                                .scaledToFill()
+                                .frame(maxWidth: 300, maxHeight: 200)
+                            case .success(let image):
+                            
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(maxWidth: 300, maxHeight: 200)
                                     .cornerRadius(10)
-                                    .opacity(0.2)
-                                    .shadow(color: Color.black.opacity(5.0), radius: 5, x: 5, y: 5)
-                            )
-                    } placeholder: {
-                        ProgressView()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: 300, maxHeight: 200)
-                            .cornerRadius(10)
-                            .overlay(
-                                Rectangle()
-                                    .foregroundColor(.black)
-                                    .cornerRadius(10)
-                                    .opacity(0.2)
-                                    .shadow(color: Color.black.opacity(5.0), radius: 5, x: 5, y: 5)
-                            )
+                                    .overlay(
+                                        Rectangle()
+                                            .foregroundColor(.black)
+                                            .cornerRadius(10)
+                                            .opacity(0.2)
+                                            .shadow(color: Color.black.opacity(5.0), radius: 5, x: 5, y: 5))
+                            
+                                Text(cat.name)
+                                    .font(.system(.title, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .fontWeight(.black)
+                            
+                            case .failure(_):
+                                Image(systemName: "photo")
+                                    .resizable()
+                                    .scaledToFit()
+                            @unknown default:
+                                EmptyView()
+                        }
                     }
                 }
             }
             
-            Text(cat.name)
-                .font(.system(.title, design: .rounded))
-                .foregroundColor(.white)
-                .fontWeight(.black)
+            
         }
         .listRowBackground(Color.clear)
     }

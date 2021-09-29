@@ -11,20 +11,30 @@ struct CatDetailView: View {
     
     @Environment(\.presentationMode) var presentationMode
      
-    var cat: Cat?
+    @State var cat: Cat?
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
                 if let urlString = cat?.image?.url {
                     if #available(iOS 15.0, *) {
-                        AsyncImage(url: URL(string: urlString)) { image in
-                            image.resizable()
-                                .aspectRatio(contentMode: .fit)
-                        } placeholder: {
-                            ProgressView()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: 300, maxHeight: 200)
+                        
+                        AsyncImage(url: URL(string: urlString)) { phase in
+                            
+                            switch phase {
+                                case .empty:
+                                    Color.purple.opacity(0.1)
+                                case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                case .failure(_):
+                                    Image(systemName: "exclamationmark.icloud")
+                                        .resizable()
+                                        .scaledToFit()
+                                @unknown default:
+                                    Image(systemName: "exclamationmark.icloud")
+                            }
                         }
                     }
                 }
