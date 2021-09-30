@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 struct Cat: Codable, Identifiable {
     var name: String

@@ -40,7 +40,7 @@ struct ListView: View {
                 
                 await self.catFetcher.fetchCats()
             }
-            .sheet(item: self.$selectedCat) { article in
+            .sheet(item: self.$selectedCat) { cat in
                 CatDetailView(cat: selectedCat)
             }
 

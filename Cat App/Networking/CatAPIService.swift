@@ -41,7 +41,7 @@ class CatAPIService: ObservableObject {
 //                    let decoder = JSONDecoder()
 //                    let catsData = try decoder.decode([Cat].self, from: data)
 //
-//                    DispatchQueue.main.async {
+//                     ain.async {
 //
 //                        self.cats = catsData
 //                    }
